@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTok - YouTube Videos TikTok Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        /* Video container aspect ratio */
+        .video-container {
+            aspect-ratio: 9/16;
+        }
+        
+        /* Animation for new video loading */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* Progress bar for video loading */
+        .progress-bar {
+            height: 2px;
+            background: linear-gradient(to right, #ff0050, #ff0050);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sans overflow-hidden">
+    <!-- Main App Container -->
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="flex justify-between items-center p-4 border-b border-gray-800 bg-black bg-opacity-80 backdrop-blur-sm z-10">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-play-circle text-2xl text-red-500"></i>
+                <h1 class="text-xl font-bold">YouTok</h1>
+            </div>
+            <div class="flex space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-800">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="p-2 rounded-full hover:bg-gray-800">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Progress bar -->
+        <div class="progress-bar"></div>
+        
+        <!-- Main Content - Video Feed -->
+        <main id="video-feed" class="flex-1 overflow-y-auto snap-y snap-mandatory">
+            <!-- Videos will be loaded here dynamically -->
+        </main>
+        
+        <!-- Bottom Navigation -->
+        <nav class="flex justify-around items-center p-4 border-t border-gray-800 bg-black bg-opacity-80 backdrop-blur-sm">
+            <button class="flex flex-col items-center">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-xs mt-1">Home</span>
+            </button>
+            <button class="flex flex-col items-center">
+                <i class="fas fa-compass text-xl"></i>
+                <span class="text-xs mt-1">Discover</span>
+            </button>
+            <button class="flex flex-col items-center">
+                <i class="fas fa-plus-circle text-3xl text-red-500 -mt-2"></i>
+            </button>
+            <button class="flex flex-col items-center">
+                <i class="fas fa-inbox text-xl"></i>
+                <span class="text-xs mt-1">Inbox</span>
+            </button>
+            <button class="flex flex-col items-center">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs mt-1">Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoFeed = document.getElementById('video-feed');
+            const progressBar = document.querySelector('.progress-bar');
+            let isLoading = false;
+            let currentPage = 1;
+            
+            // YouTube API key and search query
+            const API_KEY = 'AIzaSyBZQoWb5Q9X9X9X9X9X9X9X9X9X9X9X9X9'; // Replace with your actual API key
+            const SEARCH_QUERY = 'short viral videos';
+            
+            // Initial load
+            loadVideos();
+            
+            // Infinite scroll
+            videoFeed.addEventListener('scroll', function() {
+                if (videoFeed.scrollTop + videoFeed.clientHeight >= videoFeed.scrollHeight - 100 && !isLoading) {
+                    loadVideos();
+                }
+            });
+            
+            // Load videos function
+            async function loadVideos() {
+                if (isLoading) return;
+                
+                isLoading = true;
+                progressBar.style.width = '30%';
+                
+                try {
+                    // Simulate API call (in a real app, you would use the YouTube API)
+                    // For demo purposes, we'll use mock data
+                    const mockVideos = generateMockVideos(currentPage);
+                    
+                    // Show loading indicator
+                    progressBar.style.width = '70%';
+                    
+                    // Add videos to feed
+                    mockVideos.forEach(video => {
+                        const videoElement = createVideoElement(video);
+                        videoFeed.appendChild(videoElement);
+                    });
+                    
+                    currentPage++;
+                    progressBar.style.width = '100%';
+                    
+                    // Reset progress bar after a delay
+                    setTimeout(() => {
+                        progressBar.style.width = '0%';
+                    }, 300);
+                } catch (error) {
+                    console.error('Error loading videos:', error);
+                    progressBar.style.width = '0%';
+                } finally {
+                    isLoading = false;
+                }
+            }
+            
+            // Create video element
+            function createVideoElement(videoData) {
+                const videoElement = document.createElement('div');
+                videoElement.className = 'snap-start w-full h-screen relative video-container fade-in';
+                videoElement.innerHTML = `
+                    <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+                    </div>
+                    <iframe 
+                        class="absolute inset-0 w-full h-full" 
+                        src="https://www.youtube.com/embed/${videoData.id}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                        <div class="flex items-start">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg">${videoData.title}</h3>
+                                <p class="text-sm text-gray-300">${videoData.channel}</p>
+                                <p class="text-sm mt-1">${videoData.description}</p>
+                            </div>
+                            <div class="flex flex-col items-center space-y-4 ml-4">
+                                <div class="flex flex-col items-center">
+                                    <button class="bg-gray-800 bg-opacity-50 rounded-full p-2 hover:bg-opacity-70">
+                                        <i class="fas fa-heart text-xl"></i>
+                                    </button>
+                                    <span class="text-xs mt-1">${videoData.likes}</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <button class="bg-gray-800 bg-opacity-50 rounded-full p-2 hover:bg-opacity-70">
+                                        <i class="fas fa-comment text-xl"></i>
+                                    </button>
+                                    <span class="text-xs mt-1">${videoData.comments}</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <button class="bg-gray-800 bg-opacity-50 rounded-full p-2 hover:bg-opacity-70">
+                                        <i class="fas fa-share text-xl"></i>
+                                    </button>
+                                    <span class="text-xs mt-1">Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                return videoElement;
+            }
+            
+            // Generate mock video data (in a real app, you would use the YouTube API)
+            function generateMockVideos(page) {
+                const mockVideos = [
+                    {
+                        id: 'Ko18SgceYX8',
+                        title: 'Asianet News Live',
+                        channel: 'Rick Astley',
+                        description: 'The official video for "Never Gonna Give You Up" by Rick Astley',
+                        likes: '12.5M',
+                        comments: '45.2K'
+                    },
+                    {
+                        id: '1wECsnGZcfc',
+                        title: '24 News Live TV',
+                        channel: 'PSY',
+                        description: 'PSY - GANGNAM STYLE(강남스타일) M/V',
+                        likes: '18.7M',
+                        comments: '1.2M'
+                    },
+                    {
+                        id: '-8d8-c0yvyU',
+                        title: 'MediaOne TV Live',
+                        channel: 'Luis Fonsi',
+                        description: '"Despacito" disponible ya en todas las plataformas digitales',
+                        likes: '35.2M',
+                        comments: '2.1M'
+                    },
+                    {
+                        id: 'HGOiuQUwqEw',
+                        title: 'Reporter TV Live',
+                        channel: 'Wiz Khalifa',
+                        description: 'Official video for "See You Again" by Wiz Khalifa ft. Charlie Puth',
+                        likes: '28.4M',
+                        comments: '1.8M'
+                    },
+                    {
+                        id: 'tgBTspqA5nY',
+                        title: 'Manorama News Live',
+                        channel: 'Ed Sheeran',
+                        description: 'The official music video for Ed Sheeran - Shape Of You',
+                        likes: '24.6M',
+                        comments: '1.3M'
+                    },
+                    {
+                        id: '7Wz475NMPTM',
+                        title: 'Mathrubhumi News',
+                        channel: 'Mark Ronson',
+                        description: 'Official video for Uptown Funk by Mark Ronson ft. Bruno Mars',
+                        likes: '19.8M',
+                        comments: '987K'
+                    },
+                    {
+                        id: 'Unonbp8mci8',
+                        title: 'News18Kerala',
+                        channel: 'Luis Fonsi',
+                        description: '"Despacito" disponible ya en todas las plataformas digitales',
+                        likes: '35.2M',
+                        comments: '2.1M'
+                    },
+                    {
+                        id: 'wq0ecjkN3G8',
+                        title: 'Kairali News Live',
+                        channel: 'Wiz Khalifa',
+                        description: 'Official video for "See You Again" by Wiz Khalifa ft. Charlie Puth',
+                        likes: '28.4M',
+                        comments: '1.8M'
+                    }
+                ];
+                
+                // For demo purposes, just rotate through the mock videos
+                const startIndex = (page - 1) * 3 % mockVideos.length;
+                return [
+                    mockVideos[startIndex % mockVideos.length],
+                    mockVideos[(startIndex + 1) % mockVideos.length],
+                    mockVideos[(startIndex + 2) % mockVideos.length]
+                ];
+            }
+            
+            // Handle video visibility for autoplay
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const iframe = entry.target.querySelector('iframe');
+                    if (iframe) {
+                        if (entry.isIntersecting) {
+                            // When video is visible, play it
+                            iframe.src = iframe.src.replace('autoplay=0', 'autoplay=1');
+                        } else {
+                            // When video is not visible, pause it
+                            iframe.src = iframe.src.replace('autoplay=1', 'autoplay=0');
+                        }
+                    }
+                });
+            }, { threshold: 0.7 });
+            
+            // Observe all video elements
+            document.querySelectorAll('.video-container').forEach(video => {
+                observer.observe(video);
+            });
+        });
+    </script>
+</body>
+</html>
